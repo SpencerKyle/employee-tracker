@@ -3,21 +3,9 @@ const inquirer = require('inquirer');
 
 const PORT = process.env.PORT || 3001;
 const app = express();
-const mysql = require('mysql2');
-
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-//db connection
-const db = mysql.createConnection(
-    {
-        host: 'localhost',
-        user: 'root',
-        password: 'Sp8226743',
-        database: 'employeeTracker'
-    },
-    console.log('Connected to employee tracker database!')
-);
 
 app.get('/api/departments', (req, res) => {
     const sql = `SELECT * FROM departments`;
@@ -41,24 +29,4 @@ app.use((req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-    firstAction();
   });
-
-// INQUIRER STUFF
-
-function firstAction() {
-    inquirer.prompt({
-        type: "list",
-        name: "task",
-        message: "What would you like to do?",
-        choices: [
-            "View all departments",
-            "View all jobs",
-            "View all employees",
-            "Add a new department",
-            "Add a new job",
-            "Add a new employee",
-            "Update an existing employee"
-        ]
-    })
-}
