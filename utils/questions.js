@@ -2,9 +2,13 @@ const db = require('./connection');
 const inquirer = require('inquirer');
 
 let departments = [];
+let job = [];
+let employee = [];
 
 
  async function questions() {
+
+    console.log("----------------------------------")
     
     const questions = await inquirer.prompt({
         type: "list",
@@ -53,6 +57,120 @@ let departments = [];
         }
         addDepartment();
     }
+
+    if (questions.task === 'Add a new job') {
+        newJob = await inquirer.prompt([
+            {
+                type: 'input',
+                name: 'newJobName',
+                message: 'What is the new job called? (REQUIRED)',
+                validate: newJobName => {
+                    if (newJobName) {
+                        return true;
+                    } else {
+                        console.log("Please enter a name! >:(")
+                    }
+                }
+            },
+            {
+                type: 'input',
+                name: 'newJobSalary',
+                message: 'What is the new positions salary? (REQUIRED)',
+                validate: newJobSalary => {
+                    if (newJobSalary) {
+                        return true;
+                    } else {
+                        console.log("Please enter a salary!")
+                    }
+                }
+            },
+            {
+                type: 'input',
+                name: 'newJobId',
+                message: 'What is the department ID associated with this position? (REQUIRED)',
+                validate: newJobId => {
+                    if (newJobId) {
+                        return true;
+                    } else {
+                        console.log("Please give the department ID.")
+                    }
+                }
+            }
+        ])
+        if (newJob) {
+            job.push(newJob);
+        }
+        addJob();
+    }
+
+    if (questions.task === 'Add a new employee') {
+        newEmployee = await inquirer.prompt([
+            {
+                type: 'input',
+                name: 'newFirst',
+                message: "Please enter the Employee's first name (REQUIRED)",
+                validate: newFirst => {
+                    if (newFirst) {
+                        return true;
+                    } else {
+                        console.log("Please enter a first name!")
+                    }
+                }
+            },
+            {
+                type: 'input',
+                name: 'newLast',
+                message: "Please enter the Employee's last name (REQUIRED)",
+                validate: newLast => {
+                    if (newLast) {
+                        return true;
+                    } else {
+                        console.log("Please enter a last name!")
+                    }
+                }
+            },
+            {
+                type: 'input',
+                name: 'employeeJobId',
+                message: "Please enter the Employee's Job ID",
+                validate: employeeJobId => {
+                    if (employeeJobId) {
+                        return true;
+                    } else {
+                        console.log("Please enter an ID")
+                    }
+                }
+            },
+            {
+                type: 'input',
+                name: 'employeeManager',
+                message: "Please enter the Employee's manager ID",
+                validate: employeeManager => {
+                    if (employeeManager) {
+                        return true;
+                    } else {
+                        console.log("Please enter a valid Manager ID")
+                    }
+                }
+            },
+            {
+                type: 'input',
+                name: 'employeeDept',
+                message: "Please enter the Employee's department ID",
+                validate: employeeDept => {
+                    if (employeeDept) {
+                        return true;
+                    } else {
+                        console.log("Please enter a department ID")
+                    }
+                }
+            }
+        ])
+        if (newEmployee) {
+            employee.push(newEmployee)
+        }
+        addEmployee();
+    }
 }
 
 const showDepartments = () => {
@@ -66,8 +184,9 @@ const showDepartments = () => {
         for (let i = 0; i < row.length; i++) {
             departments.push(row[i]);
         }
-        console.log('', departments);
-        console.log('Arrow don to perform more stuff');
+        // console.log('', departments);
+        console.table(departments)
+        questions();
     })
 };
 
@@ -82,13 +201,14 @@ const showJobs = () => {
         for (let i = 0; i < row.length; i++) {
             job.push(row[i]);
         }
-        console.log('', job);
-        console.log('Arrow to perofmr mo');
+        // console.log('', job);
+        console.table(job)
+        questions();
     })
 };
 
 const showEmployees = () => {
-    employees = [];
+    employee = [];
 
     db.query(`SELECT * FROM employee`, (err, row) => {
         if (err) {
@@ -96,10 +216,11 @@ const showEmployees = () => {
             return;
         }
         for (let i = 0; i < row.length; i++) {
-            employees.push(row[i]);
+            employee.push(row[i]);
         }
-        console.log('',employees);
-        console.log('Populating all employees');
+        // console.log('',employee);
+        console.table(employee)
+        questions();
     })
 };
 
@@ -113,8 +234,33 @@ const addDepartment = () => {
         }
 
         console.log("The department has been added")
-        console.log("Yeet")
+        questions();
     });
 };
 
+const addJob = () => {
+    const params = [job[job.length-1].newJobName, job[job.length-1].newJobSalary, job[job.length-1].newJobId];
+
+    db.query(`INSERT INTO job (title, salary, department_id) VALUES (?, ?, ?)`, params, (err, res) => {
+        if (err) {
+            return;
+        }
+    });
+
+    console.log('The job has been added!')
+    questions();
+}
+
+const addEmployee = () => {
+    const params = [employee[employee.length-1].newFirst, employee[employee.length-1].newLast, employee[employee.length-1].employeeJobId, employee[employee.length-1].employeeManager, employee[employee.length-1].employeeDept];
+
+    db.query(`INSERT INTO employee (first_name, last_name, job_id, manager_id, department_id) VALUES (?, ?, ?, ?, ?)`, params, (err, res) => {
+        if (err) {
+            return;
+        }
+    });
+
+    console.log('Employee successfully added!')
+    questions();
+}
 questions();
